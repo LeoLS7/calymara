@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!--
+    If you are serving your web app in a path other than the root, change the
+    href value below to reflect the base path you are serving from.
+
+    The path provided below has to start and end with a slash "/" in order for
+    it to work correctly.
+
+    For more details:
+    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
+
+    This is a placeholder for base href that will be replaced by the value of
+    the `--base-href` argument provided to `flutter build`.
+  -->
+  <base href="/calymara/">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="Calymara: Beach Tycoon">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Calymara">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png"/>
+
+  <title>Calymara: Beach Tycoon</title>
+  <link rel="manifest" href="manifest.json">
+</head>
+<body>
+  <!--
+    You can customize the "flutter_bootstrap.js" script.
+    This is useful to provide a custom configuration to the Flutter loader
+    or to give the user feedback during the initialization process.
+
+    For more details:
+    * https://docs.flutter.dev/platform-integration/web/initialization
+  -->
+  <script>
+    // "Flüssig" graphics mode (game options): render with one pixel per CSS
+    // pixel instead of two or three. Must be set before Flutter starts.
+    try {
+      if (localStorage.getItem('calymara.lowres') === '1') {
+        Object.defineProperty(window, 'devicePixelRatio', { get: function () { return 1; } });
+      }
+    } catch (e) {}
+  </script>
+  <script>
+    // Flutter draws in its own render thread when the page is "cross-origin
+    // isolated" – by far the smoothest way to run in the browser. GitHub
+    // Pages cannot send the two headers for that, so coi_sw.js adds them.
+    // It only controls the page after one reload; that reload happens once,
+    // on the very first visit. If anything is missing, the game simply
+    // starts without the render thread.
+    (function () {
+      function start() {
+        var s = document.createElement('script');
+        s.src = 'flutter_bootstrap.js';
+        s.async = true;
+        document.body.appendChild(s);
+      }
+      var sw = navigator.serviceWorker;
+      if (window.crossOriginIsolated || !window.isSecureContext || !sw) return start();
+      var tried = false;
+      try { tried = sessionStorage.getItem('calymara.coi') === '1'; } catch (e) {}
+      if (sw.controller || tried) return start();
+      var done = false;
+      function once(f) { return function () { if (!done) { done = true; f(); } }; }
+      var fallback = once(start);
+      var reload = once(function () { window.location.reload(); });
+      // Never wait for long: without the worker the game still runs.
+      setTimeout(fallback, 4000);
+      sw.register('coi_sw.js').then(function (reg) {
+        try { sessionStorage.setItem('calymara.coi', '1'); } catch (e) {}
+        if (reg.active) return reload();
+        var w = reg.installing || reg.waiting;
+        if (!w) return fallback();
+        w.addEventListener('statechange', function () {
+          if (w.state === 'activated') reload();
+          if (w.state === 'redundant') fallback();
+        });
+      }, fallback);
+    })();
+  </script>
+</body>
+</html>
